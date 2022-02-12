@@ -21,7 +21,10 @@ contract BlindBid {
 
   mapping(address => uint) public pendingReturns;
 
-   // Modifiers
+  // Event
+  event AuctionEnded(address winner, uint highestBid);
+
+  // Modifiers
 
   modifier onlyBefore(uint _time) {
     require(block.timestamp < _time);
@@ -38,6 +41,22 @@ contract BlindBid {
     beneficiary = _beneficiary;
     biddingEnd = block.timestamp + _biddingTime;
     revealEnd = biddingEnd + _revealTime;
+  }
+
+  function withdraw() public {
+    uint amount = pendingReturns[msg.sender];
+    if (amount > 0) {
+      pendingReturns[msg.sender] = 0;
+
+      payable(msg.sender).transfer(amount * (1 ether));
+    }
+  }
+
+  function auctionEnd() public payable onlyAfter(revealEnd) {
+    require(!ended);
+    emit AuctionEnded(highestBidder, highestBid);
+    ended = true;
+    beneficiary.transfer(highestBid * (1 ether));
   }
 
   function bid() {
