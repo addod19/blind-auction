@@ -59,8 +59,23 @@ contract BlindBid {
     beneficiary.transfer(highestBid * (1 ether));
   }
 
-  function bid() {
+  function bid(bytes32 _blindedBid) public payable onlyBefore(biddingEnd) {
+    bids[msg.sender].push(Bid({
+      blindedBid: _blindedBid,
+      deposit: msg.value
+    }));
+  }
 
+  function placeBid(address bidder, uint value) internal returns(bool success) {
+    if (value <= highestBid) {
+      return false;
+    }
+    if (highestBidder != address(0)) {
+      pendingReturns[highestBidder] += highestBid;
+    }
+    highestBid = value;
+    highestBidder = bidder;
+    return true;
   }
 
 }
