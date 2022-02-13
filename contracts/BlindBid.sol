@@ -43,6 +43,10 @@ contract BlindBid {
     revealEnd = biddingEnd + _revealTime;
   }
 
+  function generateBlindedBidBytes32(uint value, bool fake) public pure returns (bytes32) {
+    return keccak256(abi.encodePacked(value, fake));
+  }
+
   function withdraw() public {
     uint amount = pendingReturns[msg.sender];
     if (amount > 0) {
@@ -76,6 +80,36 @@ contract BlindBid {
     highestBid = value;
     highestBidder = bidder;
     return true;
+  }
+
+  function reveal(
+    uint[] memory _values,
+    bool[] memory _fake
+  ) 
+    public
+    onlyAfter(biddingEnd)
+    onlyBefore(revealEnd) 
+  {
+    uint length = bids[msg.sender].length;
+    require(_values.length == length);
+    require(_fake.length == length);
+
+    for (uint i = 0; i < length; i++) {
+      Bid storage bidToCheck = bids[msg.sender][i];
+      (uint value, bool fake) = (_values[i], _fake[i]);
+
+      if (bidToCheck.blindedBid != keccak256(abi.encodePacked(value, fake))) {
+        continue;
+      }
+
+      if (!fake && bidToCheck.deposit >= value) {
+        if (!placeBid(msg.sender, value)) {
+          payable(msg.sender).transfer(bidToCheck.deposit * (1 ether));
+        }
+      }
+      bidToCheck.blindedBid = bytes32(0);
+    }
+
   }
 
 }
