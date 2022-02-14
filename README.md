@@ -9,6 +9,9 @@ A user that wants to sell one item can use the smart contract to create an aucti
 - [ ] The auction is **closed** to prevent additional bids from being added to the auction. After the auction is closed, bidders that submitted bids to the auction can reveal their full bid. Only revealed bids can win the auction.
 - [ ] The auction is **ended** to calculate the winner from the set of revealed bids. All organizations participating in the auction calculate the price that clears the auction and the winning bid. The seller can end the auction only if all bidding organizations endorse the same winner and price.
 
+### Local development
+
+`git clone https://github.com/addod19/blind-auction.git`
 
 This project was bootstrapped with `truffle init`
 
